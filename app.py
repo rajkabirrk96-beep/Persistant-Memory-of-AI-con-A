@@ -302,9 +302,9 @@ def generate_all_charts():
             ax.axhline(y=0, color='#94A3B8', linewidth=1.0,
                        linestyle='--', alpha=0.7, zorder=2)
 
-            ax.set_ylim(-1, 10)
-            ax.set_yticks([0,2,4,6,8,10])
-            ax.set_yticklabels(['0%','2%','4%','6%','8%','10%'],
+            ax.set_ylim(-0.5, 5.0)
+            ax.set_yticks([0,1,2,3,4,5])
+            ax.set_yticklabels(['0%','1%','2%','3%','4%','5%'],
                                fontsize=7.5, color='#94A3B8')
             ax.set_ylabel('Change (%)', fontsize=7.5,
                           color='#64748B', labelpad=3)
