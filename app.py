@@ -302,9 +302,9 @@ def generate_all_charts():
             ax.axhline(y=0, color='#94A3B8', linewidth=1.0,
                        linestyle='--', alpha=0.7, zorder=2)
 
-            ax.set_ylim(-0.5, 5.0)
-            ax.set_yticks([0,1,2,3,4,5])
-            ax.set_yticklabels(['0%','1%','2%','3%','4%','5%'],
+            ax.set_ylim(-1, 10)
+            ax.set_yticks([0,2,4,6,8,10])
+            ax.set_yticklabels(['0%','2%','4%','6%','8%','10%'],
                                fontsize=7.5, color='#94A3B8')
             ax.set_ylabel('Change (%)', fontsize=7.5,
                           color='#64748B', labelpad=3)
@@ -540,9 +540,14 @@ def round_page(rnd):
     furthest=session.get('furthest_url','/')
     current=f'/round/{rnd}'
     if _is_behind(current,furthest):
-        session['back_attempts']=session.get('back_attempts',0)+1
-        br=session.get('back_rounds',[]); br.append(f'R{rnd}')
-        session['back_rounds']=br
+        # Track back attempt — force session modification
+        attempts = session.get('back_attempts', 0) + 1
+        rounds = session.get('back_rounds', [])
+        rounds = list(rounds)  # make a new list — forces Flask to detect change
+        rounds.append(f'R{rnd}')
+        session['back_attempts'] = attempts
+        session['back_rounds'] = rounds
+        session.modified = True  # force Flask to save session
         return redirect(furthest)
     session['furthest_url']=current
     sector=session.get('sector','Information Technology')
@@ -678,7 +683,9 @@ def post_survey():
         sector=session.get('sector','Information Technology')
         rd=session.get('rd',{})
         results=session.get('final_results',calc_final(sector,rd))
-        back_rounds=session.get('back_rounds',[])
+        back_rounds = session.get('back_rounds', [])
+        back_rounds_str = ','.join(str(r) for r in back_rounds) if back_rounds else ''
+        back_attempts = int(session.get('back_attempts', 0))
         row={
             'participant_id':session.get('participant_id'),
             'condition':'A','sector':sector,
@@ -689,8 +696,8 @@ def post_survey():
             'started_at':session.get('started_at'),
             'completed_at':datetime.now().isoformat(),
             **{k:v for k,v in rd.items()},**results,
-            'back_attempts':session.get('back_attempts',0),
-            'back_rounds':','.join(back_rounds) if back_rounds else '',
+            'back_attempts': back_attempts,
+            'back_rounds':   back_rounds_str,
             'age':request.form.get('age'),
             'gender':request.form.get('gender'),
             'education':request.form.get('education'),
