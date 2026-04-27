@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Round {{ rnd }} — Stock Performance</h2>
+  <p>These charts show the 6-month percentage change for each stock.
+    Both charts use the same scale for direct comparison.</p>
+
+  <!-- Stock A — PNG image -->
+  <div style="background:var(--gray);border-radius:12px;padding:20px;
+              margin-bottom:20px;border:1px solid var(--border);">
+    <div style="font-weight:bold;color:var(--navy);font-size:16px;
+                margin-bottom:12px;">
+      Stock A — {{ sa }}
+    </div>
+    <img src="{{ chart_a }}" alt="Stock A performance chart"
+      style="width:100%;border-radius:8px;border:1px solid var(--border);
+             display:block;background:white;">
+  </div>
+
+  <!-- Stock B — PNG image -->
+  <div style="background:var(--gray);border-radius:12px;padding:20px;
+              margin-bottom:24px;border:1px solid var(--border);">
+    <div style="font-weight:bold;color:var(--navy);font-size:16px;
+                margin-bottom:12px;">
+      Stock B — {{ sb }}
+    </div>
+    <img src="{{ chart_b }}" alt="Stock B performance chart"
+      style="width:100%;border-radius:8px;border:1px solid var(--border);
+             display:block;background:white;">
+  </div>
+
+  <a href="{{ next_url }}" class="btn btn-full">Next →</a>
+</div>
+{% endblock %}
