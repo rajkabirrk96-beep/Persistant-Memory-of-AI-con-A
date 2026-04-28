@@ -32,6 +32,57 @@ select:focus,textarea:focus{outline:none;border-color:var(--blue);}
 .step-circle{background:var(--navy);color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;}
 .step-circle.green{background:var(--green);}
 </style>
+
+<!-- BACK BUTTON PREVENTION — THREE LAYERS -->
+<script>
+(function(){
+  // Layer 1: Push current state repeatedly
+  // Every time participant presses back,
+  // browser fires popstate and we push forward again
+  function lockHistory(){
+    window.history.pushState({locked:true}, '', window.location.href);
+  }
+
+  // Push state immediately on page load
+  lockHistory();
+
+  // Listen for back button — push forward immediately
+  window.addEventListener('popstate', function(e){
+    // Log the attempt
+    try {
+      fetch('/log_back', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url: window.location.href})
+      });
+    } catch(err) {}
+    // Push forward immediately
+    lockHistory();
+  });
+
+  // Layer 2: Keep pushing state every second
+  // This fills history so back button
+  // has nowhere to go
+  setInterval(lockHistory, 1000);
+
+  // Layer 3: Disable keyboard shortcuts
+  document.addEventListener('keydown', function(e){
+    // Block Alt+Left (back) and Backspace navigation
+    if((e.altKey && e.keyCode === 37) ||
+       (e.keyCode === 8 &&
+        e.target.tagName !== 'INPUT' &&
+        e.target.tagName !== 'TEXTAREA')){
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Layer 4: Block right-click back
+  document.addEventListener('contextmenu', function(e){
+    e.preventDefault();
+  });
+})();
+</script>
 </head>
 <body>
 <div class="header">
