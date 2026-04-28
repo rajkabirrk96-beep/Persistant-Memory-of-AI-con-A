@@ -744,6 +744,49 @@ def download_data():
 @app.route('/ping')
 def ping(): return 'alive',200
 
+@app.route('/log_back', methods=['POST'])
+def log_back():
+    try:
+        data = request.get_json()
+        pid  = session.get('participant_id', 'unknown')
+        url  = data.get('url', '') if data else ''
+        ts   = datetime.now().isoformat()
+        session['back_attempts'] = session.get('back_attempts', 0) + 1
+        rounds = list(session.get('back_rounds', []))
+        rounds.append(f"R_at_{ts[:19]}")
+        session['back_rounds'] = rounds
+        session.modified = True
+        try:
+            os.makedirs('/data', exist_ok=True)
+            log_file = '/data/back_log.csv'
+            wh = not os.path.exists(log_file)
+            with open(log_file,'a',newline='',encoding='utf-8') as f:
+                w = csv.writer(f)
+                if wh:
+                    w.writerow(['timestamp','participant_id',
+                                'page_url','total_attempts'])
+                w.writerow([ts, pid, url,
+                            session.get('back_attempts',1)])
+        except: pass
+        return {'status':'logged'}, 200
+    except:
+        return {'status':'error'}, 200
+
+@app.route('/backlog')
+def download_backlog():
+    pw = request.args.get('pw','')
+    if pw != 'raj_data_conditionA_2024':
+        return "Access denied", 403
+    log_file = '/data/back_log.csv'
+    if not os.path.exists(log_file):
+        return "No back attempts recorded", 404
+    with open(log_file,'r',encoding='utf-8') as f:
+        content = f.read()
+    return content, 200, {
+        'Content-Type': 'text/csv',
+        'Content-Disposition': 'attachment; filename=back_log.csv'
+    }
+
 # Generate charts when app starts
 generate_all_charts()
 
